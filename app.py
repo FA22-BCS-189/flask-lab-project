@@ -1,42 +1,33 @@
-from flask import Flask, request, jsonify
+from flask import Flask, render_template, request, jsonify
 
-# Create Flask app instance
 app = Flask(__name__)
 
-# ----------------------------
-# ROUTES
-# ----------------------------
+# In-memory list to store book entries (temporary, not database)
+library = []
 
-# 1️⃣ Home route
 @app.route('/')
 def home():
-    return "<h1>Welcome to the Collaborative Flask App!</h1>", 200
+    return render_template('home.html', books=library)
 
+@app.route('/add', methods=['POST'])
+def add_book():
+    data = request.get_json()
+    title = data.get('title', '').strip()
+    rating = int(data.get('rating', 0))
+    review = data.get('review', '').strip()
 
-# 2️⃣ Health check route
+    if not title or not review:
+        return jsonify(error="Please enter both a book title and review."), 400
+
+    entry = {"title": title, "rating": rating, "review": review}
+    library.append(entry)
+    return jsonify(success=True, message="Book added successfully!", books=library), 200
+
+# ✅ Health check route for CI/CD
 @app.route('/health')
 def health():
     return jsonify(status="OK"), 200
 
 
-# 3️⃣ POST route to handle data
-@app.route('/data', methods=['POST'])
-def data():
-    data = request.get_json()
-    if not data:
-        return jsonify(error="No JSON data provided"), 400
-
-    # New logic — extract fields and respond
-    name = data.get("name", "Anonymous")
-    age = data.get("age", "unknown")
-
-    return jsonify(
-        message=f"Hello {name}, age {age}. Data processed successfully!",
-        received=data
-    ), 200
-# ----------------------------
-# MAIN ENTRY POINT
-# ----------------------------
 if __name__ == '__main__':
-    # Run app on host 0.0.0.0 for Docker compatibility
     app.run(host='0.0.0.0', port=5000, debug=True)
