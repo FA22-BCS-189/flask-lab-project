@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Personal Library</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>📚 My Personal Library</h1>
+        <p>Add a new book with your rating and review.</p>
+
+        <form id="bookForm">
+            <input type="text" id="title" placeholder="Book title..." required><br>
+
+            <label for="rating">Rating:</label>
+            <select id="rating" required>
+                <option value="5">⭐⭐⭐⭐⭐</option>
+                <option value="4">⭐⭐⭐⭐</option>
+                <option value="3">⭐⭐⭐</option>
+                <option value="2">⭐⭐</option>
+                <option value="1">⭐</option>
+            </select><br>
+
+            <textarea id="review" placeholder="Write your review..." rows="4" required></textarea><br>
+            <button type="submit">Add Book</button>
+        </form>
+
+        <div id="message"></div>
+
+        <h2>📖 Library Collection</h2>
+        <div id="books">
+            {% for b in books %}
+            <div class="book">
+                <h3>{{ b.title }} — {{ '⭐' * b.rating }}</h3>
+                <p>{{ b.review }}</p>
+            </div>
+            {% else %}
+            <p>No books added yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('bookForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('title').value;
+            const rating = document.getElementById('rating').value;
+            const review = document.getElementById('review').value;
+
+            const res = await fetch('/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, rating, review })
+            });
+
+            const data = await res.json();
+            const messageDiv = document.getElementById('message');
+
+            if (data.success) {
+                messageDiv.textContent = data.message;
+                location.reload();
+            } else {
+                messageDiv.textContent = data.error || "Something went wrong.";
+            }
+        });
+    </script>
+</body>
+</html>
