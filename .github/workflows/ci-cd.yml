@@ -40,17 +40,3 @@ jobs:
 
       - name: Build Docker image
         run: docker build -t flask-lab-app:latest .
-
-      # Optional Docker Hub Push
-      - name: Log in to Docker Hub
-        if: github.event_name == 'push'
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Push image to Docker Hub
-        if: github.event_name == 'push'
-        run: |
-          docker tag flask-lab-app:latest ${{ secrets.DOCKERHUB_USERNAME }}/flask-lab-app:latest
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/flask-lab-app:latest
